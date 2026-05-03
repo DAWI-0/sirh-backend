@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from .models import Departement
+from .serializers import DepartementSerializer
 
-# Create your views here.
+class DepartementListView(generics.ListAPIView):
+    queryset = Departement.objects.all()
+    serializer_class = DepartementSerializer
+    permission_classes = [IsAuthenticated] # Seul un utilisateur connecté peut voir les départements

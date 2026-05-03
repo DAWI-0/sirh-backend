@@ -1,16 +1,28 @@
 from rest_framework.permissions import BasePermission
+from .models import Employe
 
 class IsAdministrateur(BasePermission):
-    """ Allows access only to users with the ADMIN role. """
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.role == 'ADMIN')
 
 class IsManagerRH(BasePermission):
-    """ Allows access only to users with the RH role. """
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.role == 'RH')
 
 class IsAdminOrRH(BasePermission):
-    """ Allows access to both ADMIN and RH roles (for creating Employes). """
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.role in ['ADMIN', 'RH'])
+
+class IsChefDepartementOrRH(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user.role in ['ADMIN', 'RH']:
+            return True
+            
+        try:
+            employe_connecte = Employe.objects.get(id=request.user.id)
+            if obj.departement and getattr(obj.departement, 'manager', None) == employe_connecte:
+                return True
+        except Employe.DoesNotExist:
+            pass
+            
+        return False
