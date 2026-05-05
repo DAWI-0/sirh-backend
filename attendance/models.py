@@ -11,7 +11,7 @@ class PointageIoT(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employe = models.ForeignKey('accounts.Employe', on_delete=models.CASCADE, related_name='pointages')
     type_pointage = models.CharField(max_length=10, choices=TYPE_CHOICES, default='ENTREE') # <-- LE NOUVEAU CHAMP
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add=True)
     id_capteur = models.CharField(max_length=50)
     est_justifie = models.BooleanField(default=False)
 

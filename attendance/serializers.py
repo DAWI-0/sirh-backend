@@ -3,21 +3,28 @@ from .models import PointageIoT
 from accounts.models import Employe
 
 class PointageIoTSerializer(serializers.ModelSerializer):
-    matricule = serializers.CharField(write_only=True)
+    # 1. On mappe le champ 'employe' au matricule pour la création
+    employe = serializers.SlugRelatedField(
+        queryset=Employe.objects.all(),
+        slug_field='matricule'
+    )
+    
+    # 2. Champs de lecture seule pour l'affichage React
+    employe_nom = serializers.ReadOnlyField(source='employe.username')
+    matricule_display = serializers.ReadOnlyField(source='employe.matricule')
 
     class Meta:
         model = PointageIoT
-        fields = ['matricule', 'type_pointage', 'timestamp', 'id_capteur', 'est_justifie']
-        # On peut laisser est_justifie à False par défaut comme dans ton modèle
+        fields = [
+            'id', 
+            'employe', 
+            'employe_nom', 
+            'matricule_display', 
+            'type_pointage', 
+            'timestamp', 
+            'id_capteur', 
+            'est_justifie'
+        ]
 
-    def create(self, validated_data):
-        matricule = validated_data.pop('matricule')
-        try:
-            employe = Employe.objects.get(matricule=matricule) # Adapte "matricule=" selon comment tu l'as nommé dans accounts/models.py
-        except Employe.DoesNotExist:
-            raise serializers.ValidationError({"matricule": "Cet employé n'existe pas."})
-            
-        # 3. On crée le pointage avec le bon employé
-        pointage = PointageIoT.objects.create(employe=employe, **validated_data)
-        return pointage
-        
+    # Pas besoin de def create() personnalisé ici, le ModelSerializer 
+    # gère déjà tout automatiquement une fois que SlugRelatedField est configuré.

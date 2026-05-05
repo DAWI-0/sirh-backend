@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .serializers import PointageIoTSerializer # Assure-toi que c'est le bon nom de ton serializer
-
+from rest_framework import status, generics
+from rest_framework.permissions import IsAuthenticated
+from .models import PointageIoT
+from .serializers import PointageIoTSerializer
 class IoTPontageView(APIView):
     # Pour l'instant on désactive l'authentification par token utilisateur 
     # car c'est une machine (l'ESP32) qui envoie la donnée
@@ -23,3 +24,9 @@ class IoTPontageView(APIView):
         
         # Si la donnée est mauvaise (ex: format de date incorrect), on renvoie une erreur
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # --- 2. NOUVELLE VUE POUR REACT (Lecture seule) ---
+class PointageListView(generics.ListAPIView):
+    # On trie du plus récent au plus ancien avec le signe "-"
+    queryset = PointageIoT.objects.all().order_by('-timestamp') 
+    serializer_class = PointageIoTSerializer
+    permission_classes = [IsAuthenticated] # Sécurité activée !

@@ -1,6 +1,10 @@
-from django.urls import path
-from .views import DepartementListView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import DepartementViewSet
+
+router = DefaultRouter()
+router.register(r'departements', DepartementViewSet)
 
 urlpatterns = [
-    path('departements/', DepartementListView.as_view(), name='departement-list'),
+    path('', include(router.urls)),
 ]
